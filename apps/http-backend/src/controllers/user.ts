@@ -134,6 +134,19 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
       }
 
       try {
+        const existingRoom = await prisma.room.findUnique({
+            where:{
+                slug:parsedData.data.name
+            }
+        })
+
+        if(existingRoom) {
+            res.status(400).json({
+                message:"Room already exists with the same name"
+            })
+            return
+        }
+        
         const room = await prisma.room.create({
             data:{
                 slug:parsedData.data.name,
