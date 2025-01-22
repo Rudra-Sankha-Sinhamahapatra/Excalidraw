@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { Signin, Signup } from "@repo/common/zod"
+import { CreateRoomSchema, Signin, Signup } from "@repo/common/zod"
 import prisma from "@repo/db/client";
 import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from "@repo/common/jwtSecret";
@@ -114,6 +114,43 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
     }
     }
 
-    export const Room = async(req:Request,res:Response):Promise<void> => {
-      
+    export const createRoom = async(req:Request,res:Response):Promise<void> => {
+      const parsedData = CreateRoomSchema.safeParse(req.body);
+
+      if(!parsedData.success) {
+        res.status(411).json({
+            message:"Incorrect inputs"
+        })
+        return
+      }
+
+      const userId = parseInt(req.id as string,10);
+
+      if(isNaN(userId)){
+        res.status(400).json({
+            message:"Invalid user Id"
+        })
+        return
+      }
+
+      try {
+        const room = await prisma.room.create({
+            data:{
+                slug:parsedData.data.name,
+                adminId:userId
+            }
+        })
+
+        res.status(200).json({
+            roomId:room.id,
+            room
+        })
+        return
+      } catch (error:any) {
+        console.log(error.message);
+        res.status(500).json({
+            message:"Internal Server Error"
+        })
+        return
+      }
     }
