@@ -1,0 +1,22 @@
+{
+  "name": "@repo/backend-common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    "./jwtSecret": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  },
+  "dependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

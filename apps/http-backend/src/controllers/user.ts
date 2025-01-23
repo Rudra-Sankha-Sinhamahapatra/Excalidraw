@@ -1,8 +1,8 @@
 import { Request, Response } from "express"
-import { CreateRoomSchema, Signin, Signup } from "@repo/common/zod"
+import { CreateRoomSchema, Signin, Signup } from "@repo/common/types"
 import prisma from "@repo/db/client";
 import jwt from 'jsonwebtoken'
-import { JWT_SECRET } from "@repo/common/jwtSecret";
+import { JWT_SECRET } from "@repo/backend-common/jwtSecret";
 import bcrypt from 'bcrypt'
 
 export const signup = async(req:Request,res:Response):Promise<void>=>{

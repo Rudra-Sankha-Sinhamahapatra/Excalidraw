@@ -11,15 +11,13 @@
     "@types/node": "^22.10.7"
   },
   "exports": {
-    "./zod": "./src/index.ts",
-    "./jwtSecret":"./src/jwt.ts"
+    "./types": "./src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "dotenv": "^16.4.7",
     "zod": "^3.24.1"
   }
 }
