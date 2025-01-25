@@ -4,7 +4,15 @@ import jwt, { JwtPayload } from 'jsonwebtoken'
 
 
 export function middleware(req:Request,res:Response,next:NextFunction) {
-    const token = req.headers["authorization"]??"token";
+    try {
+    const token = req.headers["authorization"];
+
+    if(!token) {
+        res.status(404).json({
+            message:"No token provided"
+        })
+        return
+    }
 
     const decoded = jwt.verify(token,JWT_SECRET) as JwtPayload
 
@@ -17,4 +25,10 @@ export function middleware(req:Request,res:Response,next:NextFunction) {
         })
         return
     }
+} catch(error:any){
+    res.status(500).json({
+        message:"Something went wrong",
+        error:error.message
+    })
+}
 }
