@@ -92,7 +92,7 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
         return
        }
     
-      const comparedPassword = await bcrypt.compare(exisitingUser.password,oldUser.password);
+      const comparedPassword = await bcrypt.compare(oldUser.password,exisitingUser.password);
 
       if(!comparedPassword){
         res.status(400).json({
@@ -166,4 +166,71 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
         })
         return
       }
+    }
+
+    export const getChats = async (req:Request,res:Response):Promise<void> => {
+        try {
+            const roomId = req.params.roomId;
+            const room = await prisma.room.findFirst({
+                where:{
+                    id:roomId
+                }
+            })
+
+            if(!room) {
+                res.status(404).json({
+                    message:"No rooms found by the specified room id"
+                })
+                return;
+            }
+
+            const messages = await prisma.chat.findMany({
+                where :{
+                    roomId
+                },
+                orderBy:{
+                    id:"desc"
+                },
+                take:1000
+        });
+
+        res.status(200).json({
+            messages
+        })
+        return
+        } catch (error) {
+            res.status(500).json ({
+                message:"Internal server Error"
+            })
+            return 
+        }
+    }
+
+    export const joinRoom = async(req:Request,res:Response):Promise<void> => {
+        try {
+        const { slug } = req.params;
+        const room = await prisma.room.findFirst({
+            where:{
+                slug
+            }
+        });
+
+        if(!room) {
+            res.status(404).json({
+                message:"No room found"
+            })
+            return
+        }
+
+        res.status(200).json({
+            message:"Room joined Successfully",
+            room
+        })
+        return
+    } catch(error){
+        res.status(500).json({
+            message:"Internal Server Error"
+        })
+        return
+    }
     }
