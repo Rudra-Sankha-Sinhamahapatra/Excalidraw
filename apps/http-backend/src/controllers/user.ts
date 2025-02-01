@@ -171,6 +171,7 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
     export const getChats = async (req:Request,res:Response):Promise<void> => {
         try {
             const roomId = req.params.roomId;
+            console.log('roomId ',roomId)
             const room = await prisma.room.findFirst({
                 where:{
                     id:roomId
@@ -198,10 +199,12 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
             messages
         })
         return
-        } catch (error) {
-            res.status(500).json ({
-                message:"Internal server Error"
+        } catch (e:any) {
+            res.json ({
+                messages:[],
+                error:e
             })
+            console.log(e.message)
             return 
         }
     }
@@ -209,28 +212,35 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
     export const joinRoom = async(req:Request,res:Response):Promise<void> => {
         try {
         const { slug } = req.params;
+        console.log('slug ',slug)
         const room = await prisma.room.findFirst({
             where:{
-                slug
+                slug:slug
             }
         });
 
-        if(!room) {
+        if (!room) {
             res.status(404).json({
-                message:"No room found"
-            })
-            return
-        }
+              message: "No room found",
+            });
+            console.log("No room found for slug:", slug);  
+            return;
+          }
+      
 
         res.status(200).json({
             message:"Room joined Successfully",
-            room
+            room,
+            slug:room.slug,
+            roomId:room.id
         })
         return
-    } catch(error){
+    } catch(error:any){
         res.status(500).json({
             message:"Internal Server Error"
         })
+        console.log(error.message);
+        console.log(error)
         return
     }
     }

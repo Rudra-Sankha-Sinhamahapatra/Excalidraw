@@ -48,17 +48,6 @@ wss.on("connection", async function (socket, request) {
     return null;
   }
 
-  if (users.find((user) => user.id === userId)) {
-    socket.send(
-      JSON.stringify({
-        type: "error",
-        message: "Duplicate connection detected. Closing socket.",
-      })
-    );
-    socket.close();
-    return null;
-  }
-
   users.push({
     socket: socket,
     id: userId,
