@@ -191,7 +191,7 @@ export const signin = async(req:Request,res:Response):Promise<void>=>{
                 orderBy:{
                     id:"desc"
                 },
-                take:1000
+                take:100
         });
 
         res.status(200).json({
