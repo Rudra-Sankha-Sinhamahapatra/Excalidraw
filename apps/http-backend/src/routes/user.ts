@@ -8,6 +8,6 @@ router.post("/signup",signup);
 router.post("/signin",signin);
 router.post("/room",middleware,createRoom);
 router.get("/chats/room/:roomId",middleware,getChats);
-router.post("/room/:slug",middleware,joinRoom);
+router.get("/room/:slug",middleware,joinRoom);
 
 export default router;
