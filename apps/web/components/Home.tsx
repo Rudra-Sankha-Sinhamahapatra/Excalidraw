@@ -11,9 +11,9 @@ export default function Home() {
   useEffect(()=>{
   const token = localStorage.getItem("token");
   if(!token) {
-    router.push("/login")
+    router.push("/auth")
   }
-  },[])
+  },[router])
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-gray-900 to-black relative overflow-hidden">
