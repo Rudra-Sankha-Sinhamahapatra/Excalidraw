@@ -1,12 +1,19 @@
 "use client"
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GlowEffect1 } from "./ui/GlowEffect1";
 
 export default function Home() {
   const [roomId, setRoomId] = useState("");
   const router = useRouter();
+
+  useEffect(()=>{
+  const token = localStorage.getItem("token");
+  if(!token) {
+    router.push("/login")
+  }
+  },[])
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-gray-900 to-black relative overflow-hidden">
