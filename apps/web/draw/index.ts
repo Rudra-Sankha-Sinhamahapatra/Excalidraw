@@ -13,28 +13,46 @@ type Shape =
       radius: number;
     };
 
-export function initDraw(canvas: HTMLCanvasElement) {
+export async function initDraw(
+  canvas: HTMLCanvasElement,
+  messages: { message: string }[],
+  socket:WebSocket,
+  roomId:string
+) {
   const ctx = canvas.getContext("2d");
 
-  const existingShapes: Shape[] = [];
+  const existingShapes: Shape[] = await getExistingShapes(messages);
 
   if (!ctx) {
     return;
   }
-  ctx.fillStyle = "black";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+
+    if(message.type === "chat") {
+     const parsedShape = JSON.parse(message.message);
+     existingShapes.push(parsedShape);
+     clearCanvas(existingShapes,canvas,ctx);
+    }
+
+  }
+
+  clearCanvas(existingShapes, canvas, ctx);
   ctx.strokeStyle = "white";
   let clicked = false;
   let startX = 0;
   let startY = 0;
 
-  const rect = canvas.getBoundingClientRect();
-
   // Adjust mouse coordinates to account for canvas position
   const getMousePos = (e: MouseEvent) => {
+    const rect = canvas.getBoundingClientRect(); // Recalculate each time
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     return {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+      x: (e.clientX - rect.left) * scaleX,
+      y: (e.clientY - rect.top) * scaleY,
     };
   };
 
@@ -52,13 +70,24 @@ export function initDraw(canvas: HTMLCanvasElement) {
     const height = pos.y - startY;
     const width = pos.x - startX;
 
-    existingShapes.push({
+    const shape : Shape = {
       type: "rect",
       x: startX,
       y: startY,
       height,
       width,
-    });
+    }
+
+    existingShapes.push(shape);
+
+   const message = JSON.stringify(shape)
+
+  socket.send(JSON.stringify({
+    type: "chat",
+    message:message,
+    roomId:roomId
+  }))
+
     console.log("End Coordinates:", pos.x, pos.y);
   });
 
@@ -67,8 +96,8 @@ export function initDraw(canvas: HTMLCanvasElement) {
       const pos = getMousePos(e);
       const width = pos.x - startX;
       const height = pos.y - startY;
-      clearCanvas(existingShapes,canvas,ctx)
-      ctx.strokeStyle = "white"
+      clearCanvas(existingShapes, canvas, ctx);
+      ctx.strokeStyle = "white";
       ctx.strokeRect(startX, startY, width, height);
     }
   });
@@ -89,4 +118,13 @@ function clearCanvas(
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
     }
   });
+}
+
+async function getExistingShapes(messages: { message: string }[]) {
+  const shapes = messages.map((message: { message: string }) => {
+    const messageData = JSON.parse(message.message);
+    return messageData;
+  });
+
+  return shapes;
 }
