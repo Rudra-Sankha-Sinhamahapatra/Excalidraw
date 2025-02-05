@@ -2,6 +2,7 @@
 import { ChatRoomClient } from "./ChatRoomClient";
 import { getChats } from "../actions/getChats";
 import { useEffect, useState } from "react";
+import Loading from "./Loading";
 
 
 export  function ChatRoom ({id}:{id:string}) {
@@ -20,7 +21,7 @@ export  function ChatRoom ({id}:{id:string}) {
     }, [id]);
 
     if (loading) {
-        return <div>Loading chats...</div>;
+        return <div><Loading/></div>;
     }
 
 
