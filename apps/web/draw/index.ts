@@ -1,23 +1,10 @@
-type Shape =
-  | {
-      type: "rect";
-      x: number;
-      y: number;
-      width: number;
-      height: number;
-    }
-  | {
-      type: "circle";
-      centerX: number;
-      centerY: number;
-      radius: number;
-    };
+import { Shape, Tool } from "../lib/types";
 
 export async function initDraw(
   canvas: HTMLCanvasElement,
   messages: { message: string }[],
-  socket:WebSocket,
-  roomId:string
+  socket: WebSocket,
+  roomId: string
 ) {
   const ctx = canvas.getContext("2d");
 
@@ -30,13 +17,12 @@ export async function initDraw(
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
 
-    if(message.type === "chat") {
-     const parsedShape = JSON.parse(message.message);
-     existingShapes.push(parsedShape);
-     clearCanvas(existingShapes,canvas,ctx);
+    if (message.type === "chat") {
+      const parsedShape = JSON.parse(message.message);
+      existingShapes.push(parsedShape);
+      clearCanvas(existingShapes, canvas, ctx);
     }
-
-  }
+  };
 
   clearCanvas(existingShapes, canvas, ctx);
   ctx.strokeStyle = "white";
@@ -70,23 +56,43 @@ export async function initDraw(
     const height = pos.y - startY;
     const width = pos.x - startX;
 
-    const shape : Shape = {
-      type: "rect",
-      x: startX,
-      y: startY,
-      height,
-      width,
+    //@ts-expect-error no error
+    const selectedTool = window.selectedTool;
+    let shape: Shape | null = null;
+
+    if (selectedTool === Tool.rectangle) {
+      shape = {
+        type: Tool.rectangle,
+        x: startX,
+        y: startY,
+        height,
+        width,
+      };
+    } else if (selectedTool === Tool.circle) {
+      const radius = Math.max(width, height) / 2;
+      shape = {
+        type: Tool.circle,
+        radius: radius,
+        centerX: startX + radius,
+        centerY: startY + radius,
+      };
+    }
+
+    if (shape === null) {
+      return;
     }
 
     existingShapes.push(shape);
 
-   const message = JSON.stringify(shape)
+    const message = JSON.stringify(shape);
 
-  socket.send(JSON.stringify({
-    type: "chat",
-    message:message,
-    roomId:roomId
-  }))
+    socket.send(
+      JSON.stringify({
+        type: "chat",
+        message: message,
+        roomId: roomId,
+      })
+    );
 
     console.log("End Coordinates:", pos.x, pos.y);
   });
@@ -98,7 +104,19 @@ export async function initDraw(
       const height = pos.y - startY;
       clearCanvas(existingShapes, canvas, ctx);
       ctx.strokeStyle = "white";
-      ctx.strokeRect(startX, startY, width, height);
+      //@ts-expect-error no error
+      const selectedTool = window.selectedTool;
+      if (selectedTool === Tool.rectangle) {
+        ctx.strokeRect(startX, startY, width, height);
+      } else if (selectedTool === Tool.circle) {
+        const radius = Math.max(width, height) / 2;
+        const centerX = startX + radius;
+        const centerY = startY + radius;
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.closePath();
+      }
     }
   });
 }
@@ -113,9 +131,14 @@ function clearCanvas(
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   existingShapes.map((shape) => {
-    if (shape.type === "rect") {
+    if (shape.type === Tool.rectangle) {
       ctx.strokeStyle = "white";
       ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+    } else if (shape.type === Tool.circle) {
+      ctx.beginPath();
+      ctx.arc(shape.centerX,shape.centerY,shape.radius,0,Math.PI * 2);
+      ctx.stroke();
+      ctx.closePath();
     }
   });
 }
