@@ -208,6 +208,56 @@ wss.on("connection", async function (socket, request) {
         return;
       }
       }
+
+      if(parsedData.type === "delete_chat") {
+        const {messageId,roomId} = parsedData;
+    
+        if (!messageId||!roomId) {
+          socket.send(
+            JSON.stringify({
+              type:"error",
+              message:"Invalid message deletion request."
+            })
+          );
+          return;
+        }
+
+        const chatMessage = await prisma.chat.findUnique({
+          where:{
+            id:messageId
+          },
+        });
+
+        if(!chatMessage) {
+          socket.send(
+            JSON.stringify({
+              type:"error",
+              message:`Message with ID ${messageId} does not exists.`
+            })
+          );
+          return
+        }
+
+        await prisma.chat.delete({
+          where:{
+            id:messageId
+          }
+        });
+
+        users.forEach((user) => {
+          if(user.rooms.includes(roomId)) {
+            user.socket.send(
+              JSON.stringify({
+                type:"delete_chat",
+                messageId,
+                roomId
+              })
+            );
+          }
+        });
+
+        console.log(`Message ${messageId} deleted from room ${roomId}`);
+      }
     } catch (error) {
       console.log("Invalid message format ", error);
     }
