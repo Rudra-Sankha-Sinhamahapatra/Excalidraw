@@ -144,6 +144,7 @@ reconnectWebSocket() {
       return;
     }
 
+    if(shape !==null && selectedTool !==Tool.eraser){
     this.existingShapes.push(shape);
 
     const message = JSON.stringify(shape);
@@ -164,12 +165,17 @@ reconnectWebSocket() {
 
     console.log("End Coordinates:", pos.x, pos.y);
   }
+}
 
   mouseMoveHandler = (e:MouseEvent) => {
     if (this.clicked === true) {
         const pos = this.getMousePos(e);
         const width = pos.x - this.startX;
         const height = pos.y - this.startY;
+        
+        if(this.selectedTool === Tool.eraser){
+          this.eraseShapeAtPosition(pos.x,pos.y);
+        } else {
         this.clearCanvas(this.existingShapes, this.canvas, this.ctx);
         this.ctx.strokeStyle = "white";
         const selectedTool = this.selectedTool;
@@ -185,9 +191,28 @@ reconnectWebSocket() {
           this.ctx.closePath();
         }
       }
+    }
   }
 
-
+eraseShapeAtPosition(x:number,y:number) {
+  const eraseRadius = 10;
+  this.existingShapes = this.existingShapes.filter((shape)=>{
+    if(shape.type == Tool.rectangle) {
+      const distance = Math.sqrt(
+        Math.pow(x- (shape.x + shape.width /2),2) + Math.pow(y-(shape.y + shape.width /2),2)
+      );
+      return distance>eraseRadius
+    } else if(shape.type === Tool.circle) {
+      const distance = Math.sqrt(
+        Math.pow(x-shape.centerX,2) + Math.pow(y-shape.centerY,2)
+      );
+      return distance>shape.radius + eraseRadius
+    }
+    return true
+  })
+  this.clearCanvas(this.existingShapes,this.canvas,this.ctx);
+}
+  
   initMouseHandlers() {
     this.canvas.addEventListener("mousedown", this.mouseDownHandler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);

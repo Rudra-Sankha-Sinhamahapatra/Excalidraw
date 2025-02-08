@@ -1,9 +1,10 @@
 export enum Tool {
-    pencil = "pencil",
-    rectangle = "rect",
-    circle = "circle",
-    pointer = "pointer",
-  }  
+  pencil = "pencil",
+  rectangle = "rect",
+  circle = "circle",
+  pointer = "pointer",
+  eraser = "eraser",
+}
 
 export type Shape =
   | {
@@ -19,10 +20,13 @@ export type Shape =
       centerY: number;
       radius: number;
     }
-    | {
-        type: Tool.pencil,
-        startX:number,
-        startY:number,
-        endX:number,
-        endY:number
+  | {
+      type: Tool.pencil;
+      startX: number;
+      startY: number;
+      endX: number;
+      endY: number;
     }
+  | {
+      type: Tool.eraser;
+    };
