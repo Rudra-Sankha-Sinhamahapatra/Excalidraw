@@ -23,7 +23,7 @@ export type Shape =
     }
   | {
       type: Tool.pencil;
-      points: {x:number,y:number}
+      points: {x:number,y:number}[]
     }
     |
     {
