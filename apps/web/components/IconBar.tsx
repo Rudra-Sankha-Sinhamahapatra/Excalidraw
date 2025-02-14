@@ -1,6 +1,6 @@
 import { Tool } from "../lib/types";
 import { IconButton } from "./IconButton";
-import { Circle, Eraser, MousePointer, Pencil, RectangleHorizontalIcon } from "lucide-react";
+import { Circle, Eraser, Minus, MousePointer, Pencil, RectangleHorizontalIcon } from "lucide-react";
 
 interface Props {
   selectedTool: Tool;
@@ -44,6 +44,13 @@ export const IconBar = ({ selectedTool, setSelectedTool }: Props) => {
             setSelectedTool(Tool.pointer);
           }}
           activated={selectedTool === Tool.pointer}
+        />
+        <IconButton
+        icon={<Minus />}
+        onClick={() => {
+          setSelectedTool(Tool.line);
+        }}
+        activated={selectedTool === Tool.line}
         />
       </div>
   );
