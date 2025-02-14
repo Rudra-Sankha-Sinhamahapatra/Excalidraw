@@ -122,16 +122,6 @@ wss.on("connection", async function (socket, request) {
         const roomId = parsedData.roomId;
         const message = parsedData.message;
 
-        if (message.length > 150) {
-          socket.send(
-            JSON.stringify({
-              type: "error",
-              message: `Message too long, maximum size 150 characters`,
-              roomId,
-            })
-          );
-          return;
-        }
 
         const user = users.find((user) => user.socket === socket);
 

@@ -85,6 +85,8 @@ export class Game {
         ctx.closePath();
       } else if (shape.type === Tool.line) {
         this.drawLine(shape);
+      } else if (shape.type === Tool.pencil) {
+        this.drawPencil(shape);
       }
     });
   }
@@ -120,6 +122,8 @@ reconnectWebSocket() {
     this.startY = pos.y;
 
     if(this.selectedTool === Tool.line) {
+      this.isDrawing = true;
+    } else if (this.selectedTool === Tool.pencil) {
       this.isDrawing = true;
     }
   }
@@ -159,6 +163,12 @@ reconnectWebSocket() {
         ]
       }
     }
+    else if (selectedTool === Tool.pencil) {
+     const currentShape = this.existingShapes[this.existingShapes.length - 1];
+     if(currentShape && currentShape.type === Tool.pencil) {
+      shape = currentShape;
+     }
+    }
 
     if (shape === null) {
       return;
@@ -192,7 +202,7 @@ reconnectWebSocket() {
         const pos = this.getMousePos(e);
         const width = pos.x - this.startX;
         const height = pos.y - this.startY;
-        
+  
         if(this.selectedTool === Tool.eraser){
           this.eraseShapeAtPosition(pos.x,pos.y);
         } else {
@@ -214,6 +224,32 @@ reconnectWebSocket() {
           this.ctx.moveTo(this.startX,this.startY);
           this.ctx.lineTo(pos.x,pos.y);
           this.ctx.stroke();
+        } else if (selectedTool === Tool.pencil) {
+         let currentShape = this.existingShapes[this.existingShapes.length -1];
+         if(!currentShape || currentShape.type !== Tool.pencil) {
+          currentShape = {
+            type:Tool.pencil,
+            points:[{x:this.startX,y:this.startY}]
+          };
+          this.existingShapes.push(currentShape);
+         }
+
+         currentShape.points.push({x:pos.x,y:pos.y})
+         
+         this.clearCanvas(this.existingShapes,this.canvas,this.ctx);
+
+         this.ctx.beginPath();
+        this.ctx.strokeStyle = "white";
+
+         if(currentShape.points[0]){
+         this.ctx.moveTo(currentShape.points[0]?.x,currentShape.points[0].y)
+         }
+                
+         currentShape.points.forEach(point => {
+          this.ctx.lineTo(point.x,point.y)
+         });
+
+         this.ctx.stroke()
         }
       }
     }
@@ -255,7 +291,20 @@ drawLine(shape:Shape) {
     this.ctx.stroke();
   }
 }
-  
+  drawPencil (shape:Shape) {
+   if (shape.type === Tool.pencil && shape.points  && shape.points.length > 0) {
+    this.ctx.strokeStyle = "white";
+    const points = shape.points;
+    this.ctx.beginPath();
+    if(points [0]) {
+      this.ctx.moveTo(points[0].x,points[0].y);
+    }
+
+    points.forEach((point) => this.ctx.lineTo(point.x,point.y));
+    this.ctx.stroke();
+   }
+  }
+
   initMouseHandlers() {
     this.canvas.addEventListener("mousedown", this.mouseDownHandler);
     this.canvas.addEventListener("mouseup", this.mouseUpHandler);
