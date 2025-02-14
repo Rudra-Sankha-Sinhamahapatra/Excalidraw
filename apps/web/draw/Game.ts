@@ -8,6 +8,7 @@ export class Game {
   private messages: { message: string }[];
   private socket: WebSocket;
   private clicked: boolean;
+  private isDrawing:boolean = false;
   private roomId: string;
   private startX: number;
   private startY: number;
@@ -51,7 +52,11 @@ export class Game {
   async initHandlers() {
     this.socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
-
+       
+      if(message.type === "eraser") {
+        this.existingShapes = [];
+        this.clearCanvas(this.existingShapes,this.canvas,this.ctx)
+      }
       if (message.type === "chat") {
         const parsedShape = JSON.parse(message.message);
         this.existingShapes.push(parsedShape);
@@ -78,6 +83,8 @@ export class Game {
         ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
         ctx.stroke();
         ctx.closePath();
+      } else if (shape.type === Tool.line) {
+        this.drawLine(shape);
       }
     });
   }
@@ -111,6 +118,10 @@ reconnectWebSocket() {
     const pos = this.getMousePos(e);
     this.startX = pos.x;
     this.startY = pos.y;
+
+    if(this.selectedTool === Tool.line) {
+      this.isDrawing = true;
+    }
   }
 
   mouseUpHandler = (e:MouseEvent) => {
@@ -138,6 +149,15 @@ reconnectWebSocket() {
         centerX: this.startX + radius,
         centerY: this.startY + radius,
       };
+    }
+    else if (selectedTool === Tool.line) {
+      shape = {
+        type:Tool.line,
+        points : [
+          {x: this.startX, y: this.startY},
+          {x: pos.x, y: pos.y}
+        ]
+      }
     }
 
     if (shape === null) {
@@ -189,6 +209,11 @@ reconnectWebSocket() {
           this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
           this.ctx.stroke();
           this.ctx.closePath();
+        }  else if(selectedTool===Tool.line) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.startX,this.startY);
+          this.ctx.lineTo(pos.x,pos.y);
+          this.ctx.stroke();
         }
       }
     }
@@ -211,6 +236,24 @@ eraseShapeAtPosition(x:number,y:number) {
     return true
   })
   this.clearCanvas(this.existingShapes,this.canvas,this.ctx);
+}
+
+drawLine(shape:Shape) {
+  if (shape.type === Tool.line && Array.isArray(shape.points) && shape.points.length >=2) {
+    this.ctx.strokeStyle = "white";
+    const points = shape.points;
+    if(points === null || points === undefined) {
+      return;
+    }
+    this.ctx.beginPath();
+    if(points[0]) {
+      this.ctx.moveTo(points[0].x,points[0].y);
+    }
+    if(points[1]) {
+      this.ctx.lineTo(points[1].x,points[1].y);
+    }
+    this.ctx.stroke();
+  }
 }
   
   initMouseHandlers() {
