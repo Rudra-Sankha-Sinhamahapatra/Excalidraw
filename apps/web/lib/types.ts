@@ -4,6 +4,7 @@ export enum Tool {
   circle = "circle",
   pointer = "pointer",
   eraser = "eraser",
+  line = "line",
 }
 
 export type Shape =
@@ -22,10 +23,12 @@ export type Shape =
     }
   | {
       type: Tool.pencil;
-      startX: number;
-      startY: number;
-      endX: number;
-      endY: number;
+      points: {x:number,y:number}
+    }
+    |
+    {
+      type: Tool.line;
+      points: {x:number,y:number}[]
     }
   | {
       type: Tool.eraser;
